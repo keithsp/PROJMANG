@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CKE Automated Quotation System - Gantt Chart</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --panel: #fffdf8;
+      --ink: #1f2a37;
+      --muted: #6b7280;
+      --grid: #e8dfcf;
+      --grid-strong: #d5c5a8;
+      --accent: #8a5a44;
+      --phase-1: #b8624f;
+      --phase-2: #d38b5d;
+      --phase-3: #267b6e;
+      --phase-4: #4f6fad;
+      --phase-5: #8e61a8;
+      --phase-6: #b85c7a;
+      --summary-shadow: rgba(31, 42, 55, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Segoe UI", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(184, 98, 79, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(38, 123, 110, 0.10), transparent 24%),
+        linear-gradient(180deg, #f7f4ed 0%, #f1ebdf 100%);
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 22px;
+    }
+
+    .title-card,
+    .meta-card,
+    .chart-card {
+      background: rgba(255, 253, 248, 0.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(138, 90, 68, 0.14);
+      border-radius: 22px;
+      box-shadow: 0 16px 40px rgba(31, 42, 55, 0.08);
+    }
+
+    .title-card {
+      padding: 26px 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.05;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 14px 0 0;
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    .meta-card {
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .meta-item {
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fffaf0 0%, #faf2e4 100%);
+      border: 1px solid rgba(138, 90, 68, 0.12);
+    }
+
+    .meta-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: #f6efe3;
+      border: 1px solid rgba(138, 90, 68, 0.12);
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    .chart-card {
+      overflow: hidden;
+    }
+
+    .chart-header {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      border-bottom: 1px solid var(--grid);
+      background: linear-gradient(180deg, #fffdf8 0%, #f9f4eb 100%);
+    }
+
+    .chart-header .left,
+    .chart-header .right {
+      padding: 16px 18px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chart-header .right {
+      position: relative;
+      border-left: 1px solid var(--grid);
+      padding-bottom: 54px;
+    }
+
+    .months {
+      position: relative;
+      height: 40px;
+      margin-top: 8px;
+    }
+
+    .month {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      padding-left: 8px;
+      font-size: 12px;
+      color: var(--ink);
+      border-left: 1px solid var(--grid-strong);
+    }
+
+    .chart-body {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      max-height: calc(100vh - 250px);
+      overflow: auto;
+    }
+
+    .labels,
+    .timeline {
+      position: relative;
+    }
+
+    .labels {
+      background: rgba(255, 252, 246, 0.9);
+    }
+
+    .timeline {
+      border-left: 1px solid var(--grid);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.35)),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent calc((100% / 365) - 1px),
+          rgba(232, 223, 207, 0.55) calc((100% / 365) - 1px),
+          rgba(232, 223, 207, 0.55) calc(100% / 365)
+        );
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(180deg, rgba(255,255,255,0.22), transparent);
+      pointer-events: none;
+    }
+
+    .row {
+      height: 44px;
+      border-bottom: 1px solid rgba(232, 223, 207, 0.65);
+      position: relative;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+    }
+
+    .wbs {
+      min-width: 46px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .task-name {
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .summary .task-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .indent-1 .task-name { padding-left: 0; }
+    .indent-2 .task-name { padding-left: 10px; }
+    .indent-3 .task-name { padding-left: 28px; }
+
+    .bar {
+      position: absolute;
+      height: 20px;
+      top: 12px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px var(--summary-shadow);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .summary-bar {
+      height: 24px;
+      top: 10px;
+      box-shadow: 0 10px 24px rgba(31, 42, 55, 0.16);
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    .bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 60%);
+      pointer-events: none;
+    }
+
+    .phase-1 { background: linear-gradient(135deg, #a94937, #cc7a61); }
+    .phase-2 { background: linear-gradient(135deg, #c97a49, #e3a36b); }
+    .phase-3 { background: linear-gradient(135deg, #1f685e, #329788); }
+    .phase-4 { background: linear-gradient(135deg, #425e9a, #5a82cd); }
+    .phase-5 { background: linear-gradient(135deg, #78509e, #a87ace); }
+    .phase-6 { background: linear-gradient(135deg, #a64868, #cd7292); }
+
+    .today-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(184, 98, 79, 0.65);
+      box-shadow: 0 0 0 6px rgba(184, 98, 79, 0.08);
+      z-index: 4;
+    }
+
+    .today-label {
+      position: absolute;
+      top: 8px;
+      transform: translateX(-50%);
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #b8624f;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      z-index: 5;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1000px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .chart-header,
+      .chart-body {
+        grid-template-columns: 280px 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="title-card">
+        <p class="eyebrow">Program Schedule</p>
+        <h1>CKE Automated Quotation System</h1>
+        <p class="subtitle">
+          A one-year project timeline rendered as a presentation-ready Gantt chart, with the development
+          phase intentionally occupying the largest share of the schedule.
+        </p>
+      </div>
+
+      <aside class="meta-card">
+        <div class="meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Start</span>
+            <span class="meta-value">23 Mar 2026</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Finish</span>
+            <span class="meta-value">23 Mar 2027</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Work Week</span>
+            <span class="meta-value">Mon-Fri, 9-5</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Major Focus</span>
+            <span class="meta-value">Phase 3 Development</span>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-1)"></span>Initiation</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-2)"></span>Planning</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-3)"></span>Development</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-4)"></span>Testing</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-5)"></span>Deployment</span>
+          <span class="legend-item"><span class="swatch" style="background:var(--phase-6)"></span>Documentation</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="chart-card">
+      <div class="chart-header">
+        <div class="left">Task Structure</div>
+        <div class="right">
+          Timeline
+          <div class="months" id="months"></div>
+        </div>
+      </div>
+      <div class="chart-body">
+        <div class="labels" id="labels"></div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Built from <code>CKE_WBS_requirements_updated_exact_cost_tmp0.xml</code>. Summary tasks are shown as heavier bars,
+      while detailed tasks are nested beneath them in sequence.
+    </p>
+  </div>
+
+  <script>
+    const tasks = [
+      { id: 1, wbs: "1", level: 1, summary: true, phase: 1, name: "1. Project initiation", start: "2026-03-23T09:00:00", finish: "2026-04-17T17:00:00" },
+      { id: 2, wbs: "1.1", level: 2, summary: false, phase: 1, name: "1.1 Project charter and kickoff", start: "2026-03-23T09:00:00", finish: "2026-03-30T17:00:00" },
+      { id: 3, wbs: "1.2", level: 2, summary: false, phase: 1, name: "1.2 Scope and objectives", start: "2026-03-31T09:00:00", finish: "2026-04-07T17:00:00" },
+      { id: 4, wbs: "1.3", level: 2, summary: false, phase: 1, name: "1.3 Initial project planning", start: "2026-04-08T09:00:00", finish: "2026-04-17T17:00:00" },
+      { id: 5, wbs: "2", level: 1, summary: true, phase: 2, name: "2. Requirements and planning", start: "2026-04-20T09:00:00", finish: "2026-06-12T17:00:00" },
+      { id: 6, wbs: "2.1", level: 2, summary: false, phase: 2, name: "2.1 Requirements collection and scope definition", start: "2026-04-20T09:00:00", finish: "2026-05-07T17:00:00" },
+      { id: 7, wbs: "2.2", level: 2, summary: false, phase: 2, name: "2.2 WBS creation", start: "2026-05-08T09:00:00", finish: "2026-05-19T17:00:00" },
+      { id: 8, wbs: "2.3", level: 2, summary: false, phase: 2, name: "2.3 Schedule and cost planning", start: "2026-05-20T09:00:00", finish: "2026-06-02T17:00:00" },
+      { id: 9, wbs: "2.4", level: 2, summary: false, phase: 2, name: "2.4 Risk planning", start: "2026-06-03T09:00:00", finish: "2026-06-12T17:00:00" },
+      { id: 10, wbs: "3", level: 1, summary: true, phase: 3, name: "3. System design and development", start: "2026-06-15T09:00:00", finish: "2026-12-18T17:00:00" },
+      { id: 11, wbs: "3.1", level: 2, summary: false, phase: 3, name: "3.1 System architecture design", start: "2026-06-15T09:00:00", finish: "2026-06-26T17:00:00" },
+      { id: 12, wbs: "3.2", level: 2, summary: true, phase: 3, name: "3.2 File interpretation module", start: "2026-06-29T09:00:00", finish: "2026-09-02T17:00:00" },
+      { id: 16, wbs: "3.3", level: 2, summary: true, phase: 3, name: "3.3 Manufacturing workflow and routing engine", start: "2026-09-03T09:00:00", finish: "2026-09-30T17:00:00" },
+      { id: 19, wbs: "3.4", level: 2, summary: true, phase: 3, name: "3.4 Cost estimation engine", start: "2026-10-01T09:00:00", finish: "2026-11-09T17:00:00" },
+      { id: 22, wbs: "3.5", level: 2, summary: false, phase: 3, name: "3.5 Customer webpage and user interface", start: "2026-11-10T09:00:00", finish: "2026-11-27T17:00:00" },
+      { id: 23, wbs: "3.6", level: 2, summary: false, phase: 3, name: "3.6 Backend integration and quotation output", start: "2026-11-30T09:00:00", finish: "2026-12-18T17:00:00" },
+      { id: 24, wbs: "4", level: 1, summary: true, phase: 4, name: "4. Validation and testing", start: "2026-12-21T09:00:00", finish: "2027-02-19T17:00:00" },
+      { id: 25, wbs: "4.1", level: 2, summary: false, phase: 4, name: "4.1 Manufacturing engineer validation", start: "2026-12-21T09:00:00", finish: "2027-01-13T17:00:00" },
+      { id: 26, wbs: "4.2", level: 2, summary: false, phase: 4, name: "4.2 Test case execution and refinement", start: "2027-01-14T09:00:00", finish: "2027-02-08T17:00:00" },
+      { id: 27, wbs: "4.3", level: 2, summary: false, phase: 4, name: "4.3 Focus group review and feedback", start: "2027-02-09T09:00:00", finish: "2027-02-19T17:00:00" },
+      { id: 28, wbs: "5", level: 1, summary: true, phase: 5, name: "5. Deployment and sales integration", start: "2027-02-22T09:00:00", finish: "2027-03-05T17:00:00" },
+      { id: 29, wbs: "5.1", level: 2, summary: false, phase: 5, name: "5.1 Internal deployment preparation", start: "2027-02-22T09:00:00", finish: "2027-02-25T17:00:00" },
+      { id: 30, wbs: "5.2", level: 2, summary: false, phase: 5, name: "5.2 Sales workflow integration", start: "2027-02-26T09:00:00", finish: "2027-03-02T17:00:00" },
+      { id: 31, wbs: "5.3", level: 2, summary: false, phase: 5, name: "5.3 Customer webpage rollout", start: "2027-03-03T09:00:00", finish: "2027-03-05T17:00:00" },
+      { id: 32, wbs: "6", level: 1, summary: true, phase: 6, name: "6. Documentation and submission", start: "2027-03-08T09:00:00", finish: "2027-03-23T17:00:00" },
+      { id: 33, wbs: "6.1", level: 2, summary: false, phase: 6, name: "6.1 Final report writing", start: "2027-03-08T09:00:00", finish: "2027-03-16T17:00:00" },
+      { id: 34, wbs: "6.2", level: 2, summary: false, phase: 6, name: "6.2 Final review and submission packaging", start: "2027-03-17T09:00:00", finish: "2027-03-23T17:00:00" }
+    ];
+
+    const startRange = new Date("2026-03-23T00:00:00");
+    const endRange = new Date("2027-03-31T00:00:00");
+    const totalMs = endRange - startRange;
+    const labels = document.getElementById("labels");
+    const timeline = document.getElementById("timeline");
+    const months = document.getElementById("months");
+
+    function pct(date) {
+      return ((date - startRange) / totalMs) * 100;
+    }
+
+    function formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
+    }
+
+    function durationDays(start, finish) {
+      return Math.round((new Date(finish) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    const monthCursor = new Date(startRange);
+    monthCursor.setDate(1);
+    while (monthCursor <= endRange) {
+      const monthStart = new Date(monthCursor);
+      const label = document.createElement("div");
+      label.className = "month";
+      label.style.left = `${pct(monthStart)}%`;
+      label.textContent = monthStart.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+      months.appendChild(label);
+      monthCursor.setMonth(monthCursor.getMonth() + 1);
+    }
+
+    tasks.forEach((task) => {
+      const labelRow = document.createElement("div");
+      labelRow.className = `row label-row indent-${Math.min(task.level, 3)} ${task.summary ? "summary" : ""}`;
+      labelRow.innerHTML = `
+        <span class="wbs">${task.wbs}</span>
+        <span class="task-name">${task.name}</span>
+      `;
+      labels.appendChild(labelRow);
+
+      const row = document.createElement("div");
+      row.className = "row";
+      row.style.position = "relative";
+
+      const bar = document.createElement("div");
+      const left = pct(new Date(task.start));
+      const right = pct(new Date(task.finish));
+      bar.className = `bar phase-${task.phase} ${task.summary ? "summary-bar" : ""}`;
+      bar.style.left = `${left}%`;
+      bar.style.width = `${Math.max(right - left, 1.3)}%`;
+      bar.title = `${task.name}\n${formatDate(task.start)} - ${formatDate(task.finish)}\n${durationDays(task.start, task.finish)} calendar days`;
+      bar.textContent = task.summary ? task.name.replace(/^\d+(\.\d+)?\s*/, "") : task.wbs;
+
+      row.appendChild(bar);
+      timeline.appendChild(row);
+    });
+  </script>
+</body>
+</html>
