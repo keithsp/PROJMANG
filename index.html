@@ -141,6 +141,33 @@
       color: var(--ink);
     }
 
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #f6efe3;
+      border: 1px solid rgba(138, 90, 68, 0.12);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input {
+      accent-color: var(--accent);
+    }
+
     .swatch {
       width: 12px;
       height: 12px;
@@ -385,6 +412,12 @@
           <span class="legend-item"><span class="swatch" style="background:var(--phase-5)"></span>Deployment</span>
           <span class="legend-item"><span class="swatch" style="background:var(--phase-6)"></span>Documentation</span>
         </div>
+        <div class="controls">
+          <label class="toggle">
+            <input type="checkbox" id="phaseToggle" />
+            Compress lower-level tasks into phase view
+          </label>
+        </div>
       </aside>
     </section>
 
@@ -445,6 +478,7 @@
     const labels = document.getElementById("labels");
     const timeline = document.getElementById("timeline");
     const months = document.getElementById("months");
+    const phaseToggle = document.getElementById("phaseToggle");
 
     function pct(date) {
       return ((date - startRange) / totalMs) * 100;
@@ -474,30 +508,42 @@
       monthCursor.setMonth(monthCursor.getMonth() + 1);
     }
 
-    tasks.forEach((task) => {
-      const labelRow = document.createElement("div");
-      labelRow.className = `row label-row indent-${Math.min(task.level, 3)} ${task.summary ? "summary" : ""}`;
-      labelRow.innerHTML = `
-        <span class="wbs">${task.wbs}</span>
-        <span class="task-name">${task.name}</span>
-      `;
-      labels.appendChild(labelRow);
+    function render(taskList) {
+      labels.innerHTML = "";
+      timeline.innerHTML = "";
 
-      const row = document.createElement("div");
-      row.className = "row";
-      row.style.position = "relative";
+      taskList.forEach((task) => {
+        const labelRow = document.createElement("div");
+        labelRow.className = `row label-row indent-${Math.min(task.level, 3)} ${task.summary ? "summary" : ""}`;
+        labelRow.innerHTML = `
+          <span class="wbs">${task.wbs}</span>
+          <span class="task-name">${task.name}</span>
+        `;
+        labels.appendChild(labelRow);
 
-      const bar = document.createElement("div");
-      const left = pct(new Date(task.start));
-      const right = pct(new Date(task.finish));
-      bar.className = `bar phase-${task.phase} ${task.summary ? "summary-bar" : ""}`;
-      bar.style.left = `${left}%`;
-      bar.style.width = `${Math.max(right - left, 1.3)}%`;
-      bar.title = `${task.name}\n${formatDate(task.start)} - ${formatDate(task.finish)}\n${durationDays(task.start, task.finish)} calendar days`;
-      bar.textContent = task.summary ? task.name.replace(/^\d+(\.\d+)?\s*/, "") : task.wbs;
+        const row = document.createElement("div");
+        row.className = "row";
+        row.style.position = "relative";
 
-      row.appendChild(bar);
-      timeline.appendChild(row);
+        const bar = document.createElement("div");
+        const left = pct(new Date(task.start));
+        const right = pct(new Date(task.finish));
+        bar.className = `bar phase-${task.phase} ${task.summary ? "summary-bar" : ""}`;
+        bar.style.left = `${left}%`;
+        bar.style.width = `${Math.max(right - left, 1.3)}%`;
+        bar.title = `${task.name}\n${formatDate(task.start)} - ${formatDate(task.finish)}\n${durationDays(task.start, task.finish)} calendar days`;
+        bar.textContent = task.summary ? task.name.replace(/^\d+(\.\d+)?\s*/, "") : task.wbs;
+
+        row.appendChild(bar);
+        timeline.appendChild(row);
+      });
+    }
+
+    const phaseViewTasks = tasks.filter((task) => task.level === 1);
+    render(tasks);
+
+    phaseToggle.addEventListener("change", () => {
+      render(phaseToggle.checked ? phaseViewTasks : tasks);
     });
   </script>
 </body>
